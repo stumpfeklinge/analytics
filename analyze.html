@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анализ данных</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+    <style>
+        .analysis-card {
+            margin-bottom: 2rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+        }
+        .form-section {
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <h1 class="display-5 fw-bold">
+                <i class="bi bi-graph-up"></i> Анализ данных
+            </h1>
+            <a href="/" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Назад к данным
+            </a>
+        </div>
+
+        <!-- Карточка линейной регрессии -->
+        <div class="card analysis-card">
+            <div class="card-header">
+                <h2 class="h4 mb-0">
+                    <i class="bi bi-scatter-chart"></i> Линейная регрессия
+                </h2>
+            </div>
+            <div class="card-body">
+                <form action="/run_regression" method="post">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="x_column" class="form-label">Независимая переменная (X):</label>
+                            <select class="form-select" id="x_column" name="x_column" required>
+                                {% for col in numeric_columns %}
+                                    <option value="{{ col }}">{{ col }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="y_column" class="form-label">Зависимая переменная (Y):</label>
+                            <select class="form-select" id="y_column" name="y_column" required>
+                                {% for col in numeric_columns %}
+                                    <option value="{{ col }}">{{ col }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-calculator"></i> Построить регрессию
+                        </button>
+                    </div>
+                </form>
+                <div class="mt-3 text-muted small">
+                    <i class="bi bi-info-circle"></i> Анализ линейной зависимости между двумя числовыми переменными
+                </div>
+            </div>
+        </div>
+
+        <!-- Карточка t-теста -->
+        <div class="card analysis-card">
+            <div class="card-header">
+                <h2 class="h4 mb-0">
+                    <i class="bi bi-clipboard-data"></i> Одновыборочный t-тест
+                </h2>
+            </div>
+            <div class="card-body">
+                <form action="/run_t_test" method="post">
+                    <div class="form-section">
+                        <label for="column" class="form-label">Числовая переменная для анализа:</label>
+                        <select class="form-select" id="column" name="column" required>
+                            {% for col in numeric_columns %}
+                                <option value="{{ col }}">{{ col }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    {% if has_date_columns %}
+                    <div class="form-section">
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="enable_date_filter"
+                                   onclick="toggleDateFilter(this)">
+                            <label class="form-check-label" for="enable_date_filter">Фильтровать по дате</label>
+                        </div>
+
+                        <div id="date_filter_section" style="display: none;">
+                            <div class="mb-3">
+                                <label for="date_column" class="form-label">Колонка с датой:</label>
+                                <select class="form-select" id="date_column" name="date_column">
+                                    {% for col in date_columns %}
+                                        <option value="{{ col }}">{{ col }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="start_date" class="form-label">Начальная дата:</label>
+                                    <input type="date" class="form-control" id="start_date" name="start_date">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="end_date" class="form-label">Конечная дата:</label>
+                                    <input type="date" class="form-control" id="end_date" name="end_date">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="form-section">
+                        <label for="reference_value" class="form-label">Сравнить со значением:</label>
+                        <input type="number" step="any" class="form-control"
+                               id="reference_value" name="reference_value" required>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-calculator"></i> Выполнить t-тест
+                        </button>
+                    </div>
+                </form>
+                <div class="mt-3 text-muted small">
+                    <i class="bi bi-info-circle"></i> Проверка гипотезы о равенстве среднего значения выборки заданному значению
+                </div>
+            </div>
+        </div>
+
+        <div class="card analysis-card">
+            <div class="card-header">
+                <h2 class="h4 mb-0">
+                    <i class="bi bi-calculator"></i> Полиномиальная регрессия
+                </h2>
+            </div>
+            <div class="card-body">
+                <form action="/run_polynomial_regression" method="post">
+                    <div class="alert alert-info">
+                        Модель: isp = w1*Oil_Price + w2*Dollar_Index + w3*Stavka +
+                        w4*Oil_Price*Dollar_Index + w5*Oil_Price*Stavka +
+                        w6*Stavka*Dollar_Index + w7
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-calculator"></i> Рассчитать модель
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleDateFilter(checkbox) {
+            const section = document.getElementById('date_filter_section');
+            section.style.display = checkbox.checked ? 'block' : 'none';
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
